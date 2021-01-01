@@ -151,7 +151,7 @@ public class AirQualityService {
         throw new IllegalArgumentException("Since is after until!");
       }
       data = airQualityRepository
-          .findByStationNameAndTimestampAfterAndTimestampBeforeOrderByTimestamp(
+          .findByStationNameAndTimestampAfterAndTimestampBeforeOrderByTimestampDesc(
               city, since, until, pageable);
     } else {
       data = airQualityRepository.findByStationNameOrderByTimestamp(city, pageable);

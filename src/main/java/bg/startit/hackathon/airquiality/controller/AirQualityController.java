@@ -2,8 +2,10 @@ package bg.startit.hackathon.airquiality.controller;
 
 import bg.startit.hackathon.airquiality.api.AirQualityApi;
 import bg.startit.hackathon.airquiality.dto.AirQualityData;
+import bg.startit.hackathon.airquiality.dto.AirQualityData.PollutantEnum;
 import bg.startit.hackathon.airquiality.dto.AirQualityPage;
 import bg.startit.hackathon.airquiality.model.AirQuality;
+import bg.startit.hackathon.airquiality.model.AirQuality.Pollutant;
 import bg.startit.hackathon.airquiality.repository.AirQualityRepository;
 import bg.startit.hackathon.airquiality.service.AirQualityService;
 import java.time.OffsetDateTime;
@@ -12,8 +14,6 @@ import java.util.stream.Collectors;
 import javax.validation.Valid;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
-import org.aspectj.asm.IElementHandleProvider;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -43,6 +43,13 @@ public class AirQualityController implements AirQualityApi {
     //TODO implement country
   }
 
+  private static final PollutantEnum asPollutantEnum(Pollutant pollutant) {
+    if (pollutant == Pollutant.NOX_as_NO2) {
+      return PollutantEnum.NOX_AS_NO2;
+    }
+    return PollutantEnum.valueOf(pollutant.name());
+  }
+
   @Override
   public ResponseEntity<AirQualityPage> readAirQualityData(@Valid String city,
       @Valid String country, @Valid OffsetDateTime since, @Valid OffsetDateTime until,
@@ -56,12 +63,13 @@ public class AirQualityController implements AirQualityApi {
         .totalElements(data.getTotalElements())
         .totalPages(data.getTotalPages())
         .content(data.get().map(el -> {
-          double dangerLimit = 2.0; // FIXME depends of Pollutant
+          double dangerLimit = el.getPollutant().getMax();
           return new AirQualityData()
               .country(el.getCountry())
               .stationName(el.getStationName())
               .stationCode(el.getStationCode())
               .unit(el.getUnit())
+              .pollutant(asPollutantEnum(el.getPollutant()))
               .value(el.getValue())
               .timestamp(el.getTimestamp())
               .dangerLimit(dangerLimit)

@@ -1,5 +1,7 @@
 package bg.startit.hackathon.airquiality.config;
 
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -24,18 +26,25 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         .csrf()
           .disable()
         .formLogin()
+          .loginPage("/login.html")
+          .loginProcessingUrl("/login")
+          .defaultSuccessUrl("/")
+          .permitAll()
           .and()
         .logout()
           .and()
         .headers()
           .frameOptions().sameOrigin().and()
         .authorizeRequests()
-        // always public
-          .antMatchers("/system/db/**").permitAll() // DB console has own authentication
-          .antMatchers("/login").permitAll() // Allow people to use login page
-          .antMatchers(HttpMethod.POST, "/api/v1/users").permitAll() // Allow user registration
-        // everything else requires authentication
-          .antMatchers("/**").authenticated()
+          // allow static resources
+          .requestMatchers(PathRequest.toStaticResources().atCommonLocations()).permitAll()
+          // don't render index page unless logged in
+          .antMatchers("/").authenticated()
+          .antMatchers("/index.html*").authenticated()
+          // allow user registration
+          .antMatchers(HttpMethod.POST, "/api/v1/users").permitAll()
+          // protect API
+          .antMatchers( "/api/v1/**").authenticated()
     ;
     // @formatter:on
   }

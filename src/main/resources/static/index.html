@@ -1,0 +1,271 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <!-- Required meta tags -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/css/bootstrap.min.css"
+        integrity="sha384-TX8t27EcRE3e/ihU7zmQxVncDAy5uIKz4rEkgIXeMed4M0jlfIDPvg6uqKI2xXr2"
+        crossorigin="anonymous">
+  <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.2.2/font/bootstrap-icons.css"
+        integrity="sha256-CbYTZQbimmCY4zTDLqNjGjC2HSfyA0S3sAuWQ0UOkDc=" crossorigin="anonymous">
+  <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/metrics-graphics@2.15.6/dist/metricsgraphics.css"
+        integrity="sha256-mNnVbYWW9czYjd9bzoXipHpT0His/FxzBIHOnkYcREo=" crossorigin="anonymous">
+  <script
+      src="https://code.jquery.com/jquery-3.5.1.min.js"
+      integrity="sha256-9/aliU8dGd2tb6OSsuzixeV4y/faTqgFtohetphbbj0="
+      crossorigin="anonymous"></script>
+  <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/js/bootstrap.bundle.min.js"
+      integrity="sha384-ho+j7jyWK8fNQe+A12Hb8AhRq26LrZ/JpcUGGOn+Y7RsweNrtN/tE3MoK7ZeZDyx"
+      crossorigin="anonymous"></script>
+  <!-- autocomplete box -->
+  <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap-autocomplete@2.3.7/dist/latest/bootstrap-autocomplete.min.js"
+      integrity="sha256-yYoz9OwGJUuV2927SrBHgg/bdqOF6oA0v781vA0/0FU="
+      crossorigin="anonymous"></script>
+  <!-- charts -->
+  <script src="https://d3js.org/d3.v4.min.js"></script>
+  <script
+      src="https://cdn.jsdelivr.net/npm/metrics-graphics@2.15.6/dist/metricsgraphics.min.js"
+      integrity="sha256-QFwUntQpro6H+h/btQ+8nVVDqeZnVQSuqsTTUGz2o44="
+      crossorigin="anonymous"></script>
+  <!-- tags input -->
+  <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/bootstrap4-tagsinput@4.1.3/tagsinput.css"
+        integrity="sha256-yKeby2UqHj5kXr8qgg38UaMA1dGC8y/IoxxwTVREi7c=" crossorigin="anonymous">
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap4-tagsinput@4.1.3/tagsinput.js"
+          integrity="sha256-qPxPcWNa+Pfknra6sjx01KUZwspyS8MYAnaW8mDEDdI="
+          crossorigin="anonymous"></script>
+  <title>Air Quality Me!</title>
+  <style>
+    .toast { position: absolute; top: 5em; right: 1em; z-index: 5000 }
+    body {
+      background-image: url('water-grass-light-lawn-meadow-sunlight-598722-pxhere.com.jpg');
+      background-position: center center;
+      background-attachment: fixed;
+      background-size: cover;
+      opacity: 0.9;
+    }
+    .pollutant-current {
+      vertical-align: middle;
+      text-align: center;
+      margin-top: auto;
+      margin-bottom: auto;
+    }
+    .pollutant-current b {
+      font-size: 1.5rem;
+    }
+
+
+  </style>
+</head>
+
+<body>
+<nav class="navbar navbar-expand-sm navbar-light bg-light shadow">
+  <a class="navbar-brand text-primary" href="#">
+    <i class="bi-globe"></i>
+  </a>
+
+  <div class="navbar-nav-scroll navbar-collapse">
+    <div class="navbar-nav-scroll navbar-collapse">
+      <ul class="navbar-nav mr-auto ml-2">
+        <li class="nav-item">
+          <form id="searchForm" class="form-inline my-2 my-lg-0">
+            <input class="form-control form-control-sm mr-sm-2 basicAutoComplete"
+                   data-url="cities.json"
+                   type="search"
+                   name="city"
+                   placeholder="Station"
+                   aria-label="Search Station"
+                   autocomplete="off">
+            <button class="btn btn-outline-primary btn-sm my-2 my-sm-0" type="submit">
+              <i class="bi-search"></i>
+            </button>
+          </form>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <ul class="navbar-nav ml-md-auto">
+    <li class="nav-item dropdown">
+      <a class="nav-item nav-link dropdown-toggle text-primary" href="#" id="navbarDropdown"
+         role="button"
+         data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+        <i class="bi-person-circle"></i>
+      </a>
+      <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdown">
+        <a href="#" class="dropdown-item disabled" id="userName">--</a>
+        <a class="dropdown-item" href="/logout">
+          <i class="bi-door-closed-fill"></i>
+          Logout
+        </a>
+        <a class="dropdown-item" data-toggle="modal" data-target="#passwordDialog" href="#">
+          <i class="bi-key-fill"></i>
+          Change Password
+        </a>
+        <a class="dropdown-item" data-toggle="modal" data-target="#settingsDialog" href="#">
+          <i class="bi-gear-fill"></i>
+          Settings
+        </a>
+      </div>
+    </li>
+  </ul>
+</nav>
+
+<div class="toast bg-danger" role="alert" aria-live="assertive" aria-atomic="true"
+     data-delay="5000">
+  <div class="toast-header">
+    <i class="bi-bug"></i>
+    <strong class="mr-auto"></strong>
+  </div>
+  <div class="toast-body" style="white-space: pre">${message}</div>
+</div>
+
+<div class="card shadow-lg m-4">
+  <div class="card-body">
+    <h1 class="card-title" id="cityName">No data available</h1>
+    <div class="card-text container" id="cityMetrics">
+      <div class="row">
+        <!-- descriptions: http://www.airqualitynow.eu/pollution_home.php -->
+        <div class="col-md-10 col-lg-11" id="cityRatingx">
+        </div>
+        <div class="col-md-2 col-lg-1" id="cityMetricsx">
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="card-footer">
+    <div id="periodButtons" class="btn-group mr-2" role="group"
+         aria-label="Визуализай данните от последния">
+      <button type="button" data-target="1" class="btn btn-secondary active">1 hour</button>
+      <button type="button" data-target="2" class="btn btn-secondary">2 hours</button>
+      <button type="button" data-target="3" class="btn btn-secondary">3 hours</button>
+      <button type="button" data-target="4" class="btn btn-secondary">4 hours</button>
+      <button type="button" data-target="24" class="btn btn-secondary">1 day</button>
+      <button type="button" data-target="48" class="btn btn-secondary">2 days</button>
+      <button type="button" data-target="72" class="btn btn-secondary">3 days</button>
+    </div>
+  </div>
+</div>
+
+<!-- password change dialog -->
+<div class="modal fade" id="passwordDialog" tabindex="-1" aria-labelledby="passwordDialogLabel"
+     aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="passwordDialogLabel">Change Password</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form id="changePasswordForm">
+          <div class="form-group">
+            <label for="currentPassword" class="col-form-label">Current Password:</label>
+            <input type="text" class="form-control" name="currentPassword" id="currentPassword"
+                   required aria-describedby="currentPasswordHelp">
+            <small id="currentPasswordHelp" class="form-text text-muted">Please enter your current
+              password.</small>
+          </div>
+          <div class="form-group">
+            <label for="newPassword" class="col-form-label">New Password:</label>
+            <input type="text" class="form-control" name="newPassword" id="newPassword" required
+                   aria-describedby="newPasswordHelp">
+            <small id="newPasswordHelp" class="form-text text-muted">Please enter your NEW
+              password.</small>
+          </div>
+          <div class="form-group">
+            <label for="newPasswordAgain" class="col-form-label">New Password (again):</label>
+            <input type="text" class="form-control" name="newPasswordAgain" id="newPasswordAgain"
+                   required aria-describedby="newPasswordHelp2">
+            <small id="newPasswordHelp2" class="form-text text-muted">Please re-enter your NEW
+              password.</small>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary" id="passwordChangeButton">Change</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- user settings dialog -->
+<div class="modal fade" id="settingsDialog" tabindex="-1" aria-labelledby="settingsDialogLabel"
+     aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="settingsDialogLabel">User Settings</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form id="settingsForm" class="needs-validation" novalidate>
+          <div class="form-group">
+            <label for="currentPassword" class="col-form-label">Receive Emails:</label>
+            <select class="form-control" name="emailNotificationPeriod" id="emailNotificationPeriod"
+                    required aria-describedby="emailNotificationPeriodHelp">
+              <option selected value="NEVER">Don't receive emails.</option>
+              <option value="THIRTY_MIN">Get emails but at most once per 30 minutes.</option>
+              <option value="ONE_HOUR">Get emails but at most once per 1 hour.</option>
+              <option value="TWO_HOURS">Get emails but at most once per 2 hours.</option>
+              <option value="THREE_HOURS">Get emails but at most once per 3 hours.</option>
+              <option value="ONE_TIME_PER_DAY">Get emails but at most once per day.</option>
+            </select>
+            <small id="emailNotificationPeriodHelp" class="form-text text-muted">How often you want
+              to receive email notifications?</small>
+          </div>
+          <div class="form-group">
+            <label for="stationNames" class="col-form-label">Stations:</label>
+            <!-- TODO: use typeahead for autocomplete: http://bootstrap-tagsinput.github.io/bootstrap-tagsinput/examples/ -->
+            <select required multiple data-role="tagsinput"
+                    id="stationNames" name="stationNames" aria-describedby="stationNamesHelp">
+            </select>
+            <small id="stationNamesHelp" class="form-text text-muted">List of stations/cities you
+              would like to receive emails for.</small>
+          </div>
+          <div class="form-group">
+            <label for="quietHoursStart" class="col-form-label">Quiet Hours Start:</label>
+            <input type="text" class="form-control"
+                   name="quietHoursStart" id="quietHoursStart"
+                   pattern="^(([0]?[1-9]|1[0-2])(:)([0-5][0-9]))$"
+                   aria-describedby="quietHoursStartHelp">
+            <small id="quietHoursStartHelp" class="form-text text-muted">Quiet Hours Start. (Do not
+              receive emails during quiet hours)</small>
+          </div>
+          <div class="form-group">
+            <label for="quietHoursEnd" class="col-form-label">Quiet Hours End:</label>
+            <input type="text" class="form-control"
+                   name="quietHoursEnd" id="quietHoursEnd"
+                   pattern="^(([0]?[1-9]|1[0-2])(:)([0-5][0-9]))$"
+                   aria-describedby="quietHoursEndHelp">
+            <small id="quietHoursEndHelp" class="form-text text-muted">Quiet Hours Start. (Do not
+              receive emails during quiet hours)</small>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary" id="settingsChangeButton">Change</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<script src="util.js"></script>
+<script src="site.js"></script>
+
+</body>
+</html>

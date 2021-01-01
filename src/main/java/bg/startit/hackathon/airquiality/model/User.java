@@ -53,7 +53,6 @@ public class User implements UserDetails {
   @Column(unique = true)
   private String email;
 
-  @NotBlank
   private String city;
 
   @Override

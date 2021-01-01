@@ -20,7 +20,7 @@ public interface AirQualityRepository extends JpaRepository<AirQuality, Long> {
 
   void deleteByTimestampBefore(OffsetDateTime timestamp);
 
-  Page<AirQuality> findByStationNameAndTimestampAfterAndTimestampBeforeOrderByTimestamp(
+  Page<AirQuality> findByStationNameAndTimestampAfterAndTimestampBeforeOrderByTimestampDesc(
       String stationName, OffsetDateTime since, OffsetDateTime until, Pageable pageable);
 
   Page<AirQuality> findByStationNameOrderByTimestamp(

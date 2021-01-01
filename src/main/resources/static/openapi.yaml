@@ -291,7 +291,7 @@ components:
           type: boolean
         pollutant:
           type: string
-          enum: [CO, C6H5_CH3, PM10, H2S, NO, PM2_5, SO2, C6H6, NOX, NM3, NO2, C6H4_CH3, NH3, NOX_as_NO2, O3]
+          enum: [CO, C6H5_CH3, PM10, H2S, 'NO', PM2_5, SO2, C6H6, NOX, NM3, NO2, C6H4_CH3, NH3, NOX_as_NO2, O3]
 
 
     UserSettingsDTO:

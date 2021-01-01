@@ -38,6 +38,8 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 public class UserController implements UserApi {
 
   private final UserService userService;
+  private static final ChangePasswordRequestValidator CHANGE_PASSWORD_REQUEST_VALIDATOR = new ChangePasswordRequestValidator();
+  private static final CreateUserRequestValidator CREATE_USER_REQUEST_VALIDATOR = new CreateUserRequestValidator();
 
   public UserController(UserService userService) {
     this.userService = userService;
@@ -46,8 +48,16 @@ public class UserController implements UserApi {
   // This method adds our custom validators
   @InitBinder
   protected void initBinder(WebDataBinder binder) {
-    binder.addValidators(new ChangePasswordRequestValidator());
-    binder.addValidators(new CreateUserRequestValidator());
+    if (binder.getTarget() == null) {
+      return;
+    }
+    final Class<?> clazz= binder.getTarget().getClass();
+    if (CHANGE_PASSWORD_REQUEST_VALIDATOR.supports(clazz)) {
+      binder.addValidators(CHANGE_PASSWORD_REQUEST_VALIDATOR);
+    }
+    if (CREATE_USER_REQUEST_VALIDATOR.supports(clazz)) {
+      binder.addValidators(CREATE_USER_REQUEST_VALIDATOR);
+    }
   }
 
   @Override

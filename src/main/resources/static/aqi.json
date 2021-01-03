@@ -1,0 +1,38 @@
+{
+  "PM10": {
+    "very_good": 50,
+    "good": 100,
+    "moderate": 150,
+    "poor": 200
+  },
+  "PM2_5": {
+    "very_good": 20,
+    "good": 50,
+    "moderate": 100,
+    "poor": 200
+  },
+  "NO2": {
+    "very_good": 100,
+    "good": 140,
+    "moderate": 200,
+    "poor": 400
+  },
+  "O3": {
+    "very_good": 120,
+    "good": 140,
+    "moderate": 180,
+    "poor": 240
+  },
+  "SO2": {
+    "very_good": 125,
+    "good": 200,
+    "moderate": 350,
+    "poor": 500
+  },
+  "CO": {
+    "very_good": 3,
+    "good": 7,
+    "moderate": 10,
+    "poor": 15
+  }
+}

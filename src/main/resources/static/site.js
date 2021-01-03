@@ -1,6 +1,8 @@
 // --- setup search
 const HOUR = 1000/*ms*/ * 60/*s*/ * 60/*m*/;
 var timePeriod = HOUR * 1;
+var POLLUTANTS = {};
+var AQI = {};
 
 var cityMetrics = $('#cityMetrics');
 var periodButtons = $('#periodButtons')
@@ -32,7 +34,8 @@ var searchForm = $('#searchForm').submit(function(e) {
               dangerLimit: e.dangerLimit,
               unit: e.unit,
               current: e.value,
-              style: e.isDangerous ? '' : 'text-danger',
+//              style: e.isDangerous ? '' : 'text-danger',
+              col: getAirQualityIndexColor(e.pollutant, e.value, e.isDangerous),
               data: []
             };
           }
@@ -45,15 +48,23 @@ var searchForm = $('#searchForm').submit(function(e) {
         Object.entries(plot).forEach(e => {
           var k = e[0];
           var v = e[1];
+          var tip = POLLUTANTS[k];
           var el = $(`
             <div class="row">
-              <div class="col-md-4 col-lg-2 ${v.style} pollutant-current">
+              <div class="col-md-4 col-lg-2 ${v.style} pollutant-current" style="color:var(${v.col})">
                 <b>${k}</b><br />
                 ${v.current} ${v.unit}
               </div>
               <div class="col-md-8 col-lg-10" id="${k}"></div>
             </div>
           `).appendTo(cityMetrics);
+          if (tip) {
+            el.find('.pollutant-current').tooltip({
+              html: true,
+              placement: 'right',
+              title: `<h4>${tip.name}</h4>${tip.info.replace('\n', '<br/><br/>')}`
+            });
+          }
           MG.data_graphic({
             data: v.data,
             width: 800,
@@ -135,6 +146,25 @@ function getCurrentUserSettings() {
     });
 }
 
+function getAirQualityIndexColor(pollutant, value, isDangerous) {
+  var aqi = AQI[pollutant];
+  if (aqi) {
+    if (value<aqi.very_good) {
+      return '--green';
+    } else if (value<aqi.good) {
+      return '--teal';
+    } else if (value<aqi.moderate) {
+      return '--blue';
+    } else if (value<aqi.poor) {
+      return '--yellow';
+    } else {
+      return '--red';
+    }
+  } else {
+    return isDangerous ? '--red' : '--dark';
+  }
+}
+
 getCurrentUser();
 getCurrentUserSettings();
 
@@ -145,3 +175,7 @@ if(window.location.hash) {
     .autoComplete('set', { value: x, text: x })
   $('#searchForm').submit();
 }
+
+f('/pollutants.json').then((data) => POLLUTANTS = data );
+f('/aqi.json').then((data) => AQI = data );
+

@@ -3,6 +3,7 @@ const HOUR = 1000/*ms*/ * 60/*s*/ * 60/*m*/;
 var timePeriod = HOUR * 1;
 var POLLUTANTS = {};
 var AQI = {};
+var AQI_COLORS = ['--green', '--teal', '--blue', '--yellow', '--red'];
 
 var cityMetrics = $('#cityMetrics');
 var periodButtons = $('#periodButtons')
@@ -34,7 +35,6 @@ var searchForm = $('#searchForm').submit(function(e) {
               dangerLimit: e.dangerLimit,
               unit: e.unit,
               current: e.value,
-//              style: e.isDangerous ? '' : 'text-danger',
               col: getAirQualityIndexColor(e.pollutant, e.value, e.isDangerous),
               data: []
             };
@@ -65,16 +65,26 @@ var searchForm = $('#searchForm').submit(function(e) {
               title: `<h4>${tip.name}</h4>${tip.info.replace('\n', '<br/><br/>')}`
             });
           }
+          var baselines = getBaselines(k, v.dangerLimit);
           MG.data_graphic({
             data: v.data,
-            width: 800,
+            full_width: true,
             height: 200,
             target: '#' + k,
             x_accessor: 't',
             y_accessor: 'v',
-            baselines: [{'value': v.dangerLimit, "label": "danger level"}],
+            baselines: baselines,
             color: ['var(--purple)']
           });
+          // if we have AQI baselines - add some color to them
+          if (baselines.length > 1) {
+            $('#' + k).find('.mg-baselines line').each((i,v) => {
+              $(v).css('stroke', `var(${AQI_COLORS[i]})`);
+            });
+            $('#' + k).find('.mg-baselines text').each((i,v) => {
+              $(v).css('stroke', `var(${AQI_COLORS[i]})`);
+            });
+          }
         })
       } else {
         $('#cityName').text('No data available');
@@ -162,6 +172,16 @@ function getAirQualityIndexColor(pollutant, value, isDangerous) {
     }
   } else {
     return isDangerous ? '--red' : '--dark';
+  }
+}
+function getBaselines(pollutant, dangerLimit) {
+  var aqi = AQI[pollutant];
+  if (aqi) {
+    return Object.entries(aqi).map(e => {
+      return {'value': e[1], 'label': e[0]};
+    });
+  } else {
+    return [{'value': dangerLimit, 'label': 'danger level'}];
   }
 }
 

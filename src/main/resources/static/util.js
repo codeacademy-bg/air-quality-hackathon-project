@@ -8,7 +8,7 @@ function f(path, body=null, json=true, queryParams={}, method='post') {
   Object.entries(queryParams).forEach((e)=>{
     url.searchParams.append(e[0], e[1]);
   })
-  var headers = {};
+  var headers = { 'Accept' : 'application/json' };
   if (body != null && typeof body == 'object') {
     headers['Content-Type'] = 'application/json';
     body = JSON.stringify(body);

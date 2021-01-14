@@ -72,6 +72,7 @@ public class AirQualityService {
 
     // now cleanup the data, older than ? days
     LOGGER.info("Removing data older than {} days", CLEANUP_PERIOD_DAYS);
+    airQualityRepository.flush();
     airQualityRepository.deleteByTimestampBefore(
         OffsetDateTime.now()
             .minus(CLEANUP_PERIOD_DAYS, ChronoUnit.DAYS));

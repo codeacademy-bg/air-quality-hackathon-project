@@ -38,7 +38,7 @@ public class AirQualityService {
 
   // how often to download and process the files (30 minutes)
   private static final long DOWNLOAD_PERIOD = 30L/*min*/ * 60L /*s*/ * 1000L /*ms*/;
-  private static final long CLEANUP_PERIOD_DAYS = 7;
+  private static final long CLEANUP_PERIOD_DAYS = 3;
   // the list containing all files
   private static final String FILES_LIST_URL = "https://discomap.eea.europa.eu/map/fme/latest/files.txt";
 
@@ -70,7 +70,7 @@ public class AirQualityService {
       }
     }
 
-    // now cleanup the data, older by 7 days
+    // now cleanup the data, older than ? days
     LOGGER.info("Removing data older than {} days", CLEANUP_PERIOD_DAYS);
     airQualityRepository.deleteByTimestampBefore(
         OffsetDateTime.now()

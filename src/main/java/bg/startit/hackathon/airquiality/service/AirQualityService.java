@@ -13,27 +13,23 @@ import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import javax.transaction.Transactional;
 import lombok.Data;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.context.event.EventListener;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpMethod;
-import org.springframework.scheduling.annotation.Async;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 @Service
+@Transactional
 public class AirQualityService {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(AirQualityService.class);
 
-  // how often to download and process the files (30 minutes)
-  private static final long DOWNLOAD_PERIOD = 30L/*min*/ * 60L /*s*/ * 1000L /*ms*/;
-  private static final long CLEANUP_PERIOD_DAYS = 3;
   // the list containing all files
   private static final String FILES_LIST_URL = "https://discomap.eea.europa.eu/map/fme/latest/files.txt";
 
@@ -49,18 +45,14 @@ public class AirQualityService {
     this.airQualityRepository = airQualityRepository;
   }
 
-  @Async
-  @EventListener
-  public void cleanupOlderEntries(AirQualityDataEvent event) {
+  public void cleanupOlderEntries(int days) {
     // now cleanup the data, older than ? days
-    LOGGER.info("Removing data older than {} days", CLEANUP_PERIOD_DAYS);
+    LOGGER.info("Removing data older than {} days", days);
     airQualityRepository.flush();
     airQualityRepository.deleteByTimestampBefore(
-        OffsetDateTime.now()
-            .minus(CLEANUP_PERIOD_DAYS, ChronoUnit.DAYS));
+        OffsetDateTime.now().minus(days, ChronoUnit.DAYS));
   }
 
-  @Scheduled(fixedDelay = DOWNLOAD_PERIOD)
   public void downloadData() {
     // retrieve list of files
     String[] lines = http.getForObject(FILES_LIST_URL, String.class).split("\n");
@@ -77,7 +69,6 @@ public class AirQualityService {
     }
 
   }
-
 
   private void downloadCsvFile(String url) {
     final ObjectMapper mapper = new CsvMapper();
@@ -116,7 +107,7 @@ public class AirQualityService {
     return AirQuality.Pollutant.valueOf(polutant);
   }
 
-  protected Optional<AirQuality> addCsvData(AirQualityCsvEntry pojo) {
+  private Optional<AirQuality> addCsvData(AirQualityCsvEntry pojo) {
     // skipping invalid entries
     if (pojo.value_validity < 0) {
       return Optional.empty();
